@@ -26,13 +26,23 @@ class Mux:
 
         :param data_inputs: list of data inputs
         :param control_inputs: list of control inputs
-        :return:
+        :return: the result of the lut
         """
-        result = 0
-        inpNumber = 0
+        input_number = 0
 
         # calculate the #data input to be selected
         for i in range(self.num_of_control_inputs):
-            inpNumber += pow(2, self.num_of_control_inputs - i - 1) * control_inputs[i]
+            input_number += pow(2, self.num_of_control_inputs - i - 1) * control_inputs[i]
 
-        return data_inputs[inpNumber]
+        return data_inputs[input_number]
+
+    @staticmethod
+    def get_mux_params(input_labels, mux_size):
+        """
+        Generates the select lines and the output node label if the given inputs can be fitted into the mux of the
+        given size.
+
+        :param input_labels: The label of the particular input node. e.g. 01x, 1xx
+        :param mux_size: the number of data inputs 
+        :return:
+        """

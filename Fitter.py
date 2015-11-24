@@ -1,5 +1,9 @@
 """
 The main script to fit a desired Mux into the given set of LUTs.
+
+Assumptions:
+
+1) LUTs only implement a 2^(n):1 MUX
 """
 
 from math import log2, ceil
