@@ -1,9 +1,9 @@
+import math
+
 """
 A class to emulate an LUT
 """
 __author__ = 'ayush'
-
-import math
 
 
 class Lut:
@@ -19,10 +19,10 @@ class Lut:
         :param mux_data_inps: The number of data inputs for the MUX
         :return:
         """
-        num_of_select_inps = int(math.ceil(math.log2(mux_data_inps)))
-        self.num_of_inputs = mux_data_inps + num_of_select_inps
+        num_of_select_inp = int(math.ceil(math.log2(mux_data_inps)))
+        self.num_of_inputs = mux_data_inps + num_of_select_inp
         length = int(math.pow(2, self.num_of_inputs))
-        temp = int(math.pow(2, num_of_select_inps))
+        temp = int(math.pow(2, num_of_select_inp))
         self.lut_map = [0] * length
 
         format_specifier = '{0:0%db}' % self.num_of_inputs

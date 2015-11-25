@@ -53,7 +53,7 @@ class Mux:
         :param mux_size: the number of data inputs for the mux
         :return:
         """
-
+        # print('in get mux params')
         k = math.log2(mux_size)  # number of select lines
 
         # Mux can be fit if there are <= k columns which have both zeros and
@@ -66,9 +66,9 @@ class Mux:
         columns_list = list()  # list of columns having both zeros and ones
         # the labels are from MSB to LSB
         for i in range(a):
-            is_one_exists = not np.where(input_labels[:, a - 1 - i] == 1)[0].size == 0
-            is_zero_exists = not np.where(input_labels[:, a - 1 - i] == 0)[0].size == 0
-            is_dontcare_exists = not np.where(input_labels[:, a - 1 - i] == 2)[0].size == 0
+            is_one_exists = not (np.where(input_labels[:, a - 1 - i] == 1)[0].size == 0)
+            is_zero_exists = not (np.where(input_labels[:, a - 1 - i] == 0)[0].size == 0)
+            is_dontcare_exists = not (np.where(input_labels[:, a - 1 - i] == 2)[0].size == 0)
 
             if is_one_exists is True:
                 if is_zero_exists is True or is_dontcare_exists is True:
@@ -78,6 +78,7 @@ class Mux:
                 columns_list.append(i)
                 is_similar[i] = False
 
+        # print('Select colunms list - %r' % columns_list)
         if len(columns_list) > k:  # Mux cannot be fit for a given set of params
             return None
 
@@ -89,9 +90,9 @@ class Mux:
 
         for i in range(a):
             if is_similar[i]:
-                output_node_label[i] = input_labels[0, i]
+                output_node_label[a - i - 1] = input_labels[0, a - i - 1]
             else:
-                output_node_label[i] = 2
+                output_node_label[a - i - 1] = 2
         return columns_list, output_node_label
 
 
