@@ -86,6 +86,7 @@ class Fitter:
         available_muxes = sorted(mux_dict.keys())  # implementable mux-sizes in increasing order of the size
 
         deactivated_label = [-1] * L  # label to be used for deactivated output nodes
+        dummy_input_label = [2] * L  # label for dummy input node
 
         # print(' Available muxes - %r' % available_muxes)
         while count < num_of_inputs:  # loop till we have not covered all inputs on some mux
@@ -101,8 +102,8 @@ class Fitter:
 
             # try to fit a subset of the inputs to the mux of given size
             mux_candidate_inputs = np.empty((mux_size, L))  # candidate nodes for fitting the mux
-
-            for i in range(0, num_of_inputs - mux_size + 1):
+            # TODO: the for loop condition creates pain when large mux is available
+            for i in range(0, num_of_inputs):
                 k = i
                 inp_count = 0
                 used_inp_list = list()
@@ -112,10 +113,12 @@ class Fitter:
                         inp_count += 1
                         used_inp_list.append(k)
                     k += 1
-                print('checking for inputs - %r' % used_inp_list)
-                if inp_count < mux_size - 1:
-                    break
-
+                # print('input node labels - %r' % mux_candidate_inputs)
+                while inp_count < mux_size:
+                    mux_candidate_inputs[inp_count, :] = dummy_input_label
+                    inp_count += 1
+                # print('checking for inputs - %r' % used_inp_list)
+                # print('input node labels - %r' % mux_candidate_inputs)
                 # print('getting mux params')
                 mux_params = Mux.get_mux_params(mux_candidate_inputs, mux_size)
                 # print(mux_params)
@@ -134,10 +137,10 @@ class Fitter:
                     used_lut = lut_list.pop(0)  # get the smallest sized lut which can implement the required mux
                     used_list.append(used_lut)
                     output_nodes_labels[used_inp_list[0], :] = mux_params[1]
-                    for j in range(1, mux_size):
+                    for j in range(1, len(used_inp_list)):
                         output_nodes_labels[used_inp_list[j], :] = deactivated_label
 
-                    count = count + mux_size
+                    count += len(used_inp_list)
                     if len(lut_list) != 0:
                         # print('adding back the mux')
                         mux_dict[mux_size] = lut_list
@@ -212,6 +215,16 @@ def execute_test():
     fitter.pretty_print()
 
     lut_set = {6: 1, 3: 5}
+    fitter = Fitter(8, lut_set)
+    fitter.fit()
+    fitter.pretty_print()
+
+    lut_set = {3: 2, 5: 2}
+    fitter = Fitter(4, lut_set)
+    fitter.fit()
+    fitter.pretty_print()
+
+    lut_set = {6: 5}
     fitter = Fitter(8, lut_set)
     fitter.fit()
     fitter.pretty_print()
