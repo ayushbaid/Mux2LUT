@@ -235,12 +235,7 @@ def execute_test():
     # fitter.pretty_print()
     # fitter.print_lut_details()
     #
-    # lut_set = {3: 2, 5: 2}
-    # fitter = Fitter(4, lut_set)
-    # fitter.fit()
-    # fitter.pretty_print()
-    # fitter.print_lut_details()
-    #
+
     lut_set = {6: 5}
     fitter = Fitter(8, lut_set)
     fitter.fit()
