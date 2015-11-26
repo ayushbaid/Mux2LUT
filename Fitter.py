@@ -11,6 +11,7 @@ from math import log2, ceil
 import numpy as np
 
 from mux import Mux
+from lut import Lut
 
 
 class Fitter:
@@ -25,9 +26,7 @@ class Fitter:
         :return: None
         """
         self.used_lut_list = list()  # list of (list of luts) according to layers used for creating the req. mux
-        self.graph_edges = list()  # a list of directed edges, each edge is a tuple
-        self.data_input_nodes = list()
-        self.control_input_nodes = list()
+        self.used_lut_objects = list()  # list of objects of LUT class used to generate the mux; no layer info
         self.mux_size = mux_size
         self.lut_set = lut_set
 
@@ -63,7 +62,7 @@ class Fitter:
         self.control_input_nodes = self.mux_size + range(ceil(log2(self.mux_size)))
 
     @staticmethod
-    def fit_layer(input_nodes_labels, mux_dict):
+    def fit_layer(input_nodes_labels, mux_dict, used_lut_objects):
         """
         This function performs the fitting of a layer with a given number of inputs
 
@@ -72,6 +71,7 @@ class Fitter:
         remaining inputs
         :param input_nodes_labels: 2D matrix where each row is the label for an input node
         :param mux_dict:
+        :param used_lut_objects: the list of lut objects used till now
         :return: used_list: the LUTS used in this layer
         :return output_nodes_labels: 2D matrix for lables for the output nodes
         """
@@ -102,7 +102,7 @@ class Fitter:
 
             # try to fit a subset of the inputs to the mux of given size
             mux_candidate_inputs = np.empty((mux_size, L))  # candidate nodes for fitting the mux
-            # TODO: the for loop condition creates pain when large mux is available
+
             for i in range(0, num_of_inputs):
                 k = i
                 inp_count = 0
@@ -127,16 +127,24 @@ class Fitter:
                     # print(mux_params[1])
                     # hence implementable
 
+                    lut_list = mux_dict.pop(mux_size)
+                    if lut_list is None:
+                        break
+
                     # setting used flags for input nodes
                     for index in used_inp_list:
                         is_used[index] = True
 
-                    lut_list = mux_dict.pop(mux_size)
-                    if lut_list is None:
-                        break
                     used_lut = lut_list.pop(0)  # get the smallest sized lut which can implement the required mux
                     used_list.append(used_lut)
-                    output_nodes_labels[used_inp_list[0], :] = mux_params[1]
+
+                    select_lines = mux_params[0]
+                    output_node_label = mux_params[1]
+
+                    lut = Lut(used_lut, mux_candidate_inputs, select_lines, output_node_label)
+                    used_lut_objects.append(lut)
+
+                    output_nodes_labels[used_inp_list[0], :] = output_node_label
                     for j in range(1, len(used_inp_list)):
                         output_nodes_labels[used_inp_list[j], :] = deactivated_label
 
@@ -179,7 +187,7 @@ class Fitter:
         while current_num_inputs > 1:
             layer_number += 1
             print('\n\n*****fitting layer %d*****' % layer_number)
-            lut_layer, output_label_nodes = self.fit_layer(input_node_labels, self.mux_dict)
+            lut_layer, output_label_nodes = self.fit_layer(input_node_labels, self.mux_dict, self.used_lut_objects)
             print('LUTs used - %r' % lut_layer)
             print('Output nodes labels - %r' % output_label_nodes)
             if len(lut_layer) == 0:
@@ -199,35 +207,45 @@ class Fitter:
         """
         if self.used_lut_list is None:
             return
-        print('\n##########')
+        print('\n\n##########')
         print('Fitted layout')
         for layer_list in self.used_lut_list:
             for lut in layer_list:
                 print(lut, end=' ')
             print('')
-        print('\n\n')
+        print('\n')
+
+    def print_lut_details(self):
+        print('LUT details - ')
+        for lut in self.used_lut_objects:
+            lut.print_labels()
+            lut.print_lut_map()
 
 
 def execute_test():
-    lut_set = {3: 2, 5: 2}
-    fitter = Fitter(4, lut_set)
-    fitter.fit()
-    fitter.pretty_print()
+    # lut_set = {3: 2, 5: 2}
+    # fitter = Fitter(4, lut_set)
+    # fitter.fit()
+    # fitter.pretty_print()
+    # fitter.print_lut_details()
 
-    lut_set = {6: 1, 3: 5}
-    fitter = Fitter(8, lut_set)
-    fitter.fit()
-    fitter.pretty_print()
-
-    lut_set = {3: 2, 5: 2}
-    fitter = Fitter(4, lut_set)
-    fitter.fit()
-    fitter.pretty_print()
-
+    # lut_set = {6: 1, 3: 5}
+    # fitter = Fitter(8, lut_set)
+    # fitter.fit()
+    # fitter.pretty_print()
+    # fitter.print_lut_details()
+    #
+    # lut_set = {3: 2, 5: 2}
+    # fitter = Fitter(4, lut_set)
+    # fitter.fit()
+    # fitter.pretty_print()
+    # fitter.print_lut_details()
+    #
     lut_set = {6: 5}
     fitter = Fitter(8, lut_set)
     fitter.fit()
     fitter.pretty_print()
+    fitter.print_lut_details()
 
 
 if __name__ == '__main__':
